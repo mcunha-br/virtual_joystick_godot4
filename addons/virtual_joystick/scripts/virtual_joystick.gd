@@ -2,7 +2,11 @@
 extends Node2D
 
 signal analogic_chage(move: Vector2)
+signal analogic_just_pressed
 signal analogic_released
+
+@export var normalized: bool = true
+@export var zero_at_touch: bool = false
 
 @export var border: Texture2D:
 	set(value):
@@ -14,6 +18,8 @@ signal analogic_released
 		stick = value
 		_draw()
 
+@export var stick_pressed: Texture2D
+
 var joystick = Sprite2D.new()
 var touch = TouchScreenButton.new()
 var radius := Vector2(32, 32)
@@ -21,7 +27,8 @@ var boundary := 64
 var ongoing_drag := -1
 var return_accel := 20
 var threshold := 10
-
+var is_pressed = false
+@onready var default_global_position = global_position
 
 
 func _draw() -> void:	
@@ -36,13 +43,17 @@ func _draw() -> void:
 
 
 func _ready() -> void:	
-	touch.released.connect(func(): emit_signal("analogic_released"))	
+	touch.released.connect(func(): emit_signal("analogic_released"))
+	touch.position = -radius
+	
+	if stick_pressed == null:
+		stick_pressed = preload("res://addons/virtual_joystick/sprites/stick_pressed.png")
 	
 
 func _process(delta: float) -> void:
 	if ongoing_drag == -1:
 		var pos_difference = (Vector2.ZERO - radius) - touch.position
-		touch.position += pos_difference * return_accel * delta
+		touch.position += pos_difference * return_accel * delta * 2
 		
 
 func _input(event: InputEvent) -> void:
@@ -50,17 +61,34 @@ func _input(event: InputEvent) -> void:
 		var event_dist_from_center = (event.position - global_position).length()
 
 		if event_dist_from_center <= boundary * global_scale.x or event.get_index() == ongoing_drag:
+			if !is_pressed:
+				is_pressed = true
+				emit_signal("analogic_just_pressed")
+				
+				touch.texture_normal = stick_pressed
+				
+				if zero_at_touch:
+					global_position = event.position
+			
 			touch.global_position = event.position - radius * global_scale
 			
 			if get_button_pos().length() > boundary:
 				touch.position = get_button_pos().normalized() * boundary - radius
 
 			ongoing_drag = event.get_index()
-			emit_signal("analogic_chage", get_button_pos().normalized())
+			if normalized:
+				emit_signal("analogic_chage", get_button_pos().normalized())
+			else:
+				emit_signal("analogic_chage", get_button_pos().normalized() * min (get_button_pos().length()/boundary, 1))
+							
+
 
 	if event is InputEventScreenTouch and not event.is_pressed() and event.get_index() == ongoing_drag:
 		ongoing_drag = -1
 		emit_signal("analogic_chage", Vector2.ZERO)
+		global_position = default_global_position
+		is_pressed = false
+		touch.texture_normal = stick if is_instance_valid(stick) else preload("res://addons/virtual_joystick/sprites/stick.png")
 		
 
 func get_button_pos() -> Vector2:
