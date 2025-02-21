@@ -5,9 +5,11 @@ signal analogic_chage(move: Vector2)
 signal analogic_just_pressed
 signal analogic_released
 
+@export_group("Settings")
 @export var normalized: bool = true
 @export var zero_at_touch: bool = false
 
+@export_group("Sprites")
 @export var border: Texture2D:
 	set(value):
 		border = value
@@ -43,8 +45,13 @@ func _draw() -> void:
 
 
 func _ready() -> void:	
-	touch.released.connect(func(): emit_signal("analogic_released"))
 	touch.position = -radius
+	touch.released.connect(analogic_released.emit)
+
+	if ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"):
+		printerr("The Project Setting 'emulate_mouse_from_touch' should be set to False")
+	if not ProjectSettings.get_setting("input_devices/pointing/emulate_touch_from_mouse"):
+		printerr("The Project Setting 'emulate_touch_from_mouse' should be set to True")
 	
 	if stick_pressed == null:
 		stick_pressed = preload("res://addons/virtual_joystick/sprites/stick_pressed.png")
@@ -77,9 +84,9 @@ func _input(event: InputEvent) -> void:
 
 			ongoing_drag = event.get_index()
 			if normalized:
-				emit_signal("analogic_chage", get_button_pos().normalized())
+				analogic_chage.emit(get_value())
 			else:
-				emit_signal("analogic_chage", get_button_pos().normalized() * min (get_button_pos().length()/boundary, 1))
+				analogic_chage.emit(get_value() * min (get_button_pos().length() / boundary, 1))
 							
 
 
@@ -99,4 +106,3 @@ func get_value() -> Vector2:
 		return get_button_pos().normalized()
 		
 	return Vector2.ZERO
-
