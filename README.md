@@ -6,7 +6,7 @@
 ------------
 
 #### Demostração
-[![Virtual Joystick](https://github.com/mcunha-br/virtual_joystick_godot4/blob/master/capa_virtual_joystick.png?raw=true "Virtual Joystick")](https://www.youtube.com/watch?v=T56kGj-w5cM "Virtual Joystick")
+[![Virtual Joystick](https://github.com/mcunha-br/virtual_joystick_godot4/blob/master/addons/virtual_joystick/sprites/capa_virtual_joystick.png?raw=true "Virtual Joystick")](https://www.youtube.com/watch?v=T56kGj-w5cM "Virtual Joystick")
 
 ------------
 
