@@ -1,7 +1,7 @@
 @tool
 extends Node2D
 
-signal analogic_chage(move: Vector2)
+signal analogic_change(move: Vector2)
 signal analogic_just_pressed
 signal analogic_released
 
@@ -84,18 +84,20 @@ func _input(event: InputEvent) -> void:
 
 			ongoing_drag = event.get_index()
 			if normalized:
-				analogic_chage.emit(get_value())
+				analogic_change.emit(get_value())
 			else:
-				analogic_chage.emit(get_value() * min (get_button_pos().length() / boundary, 1))
+				analogic_change.emit(get_value() * min (get_button_pos().length() / boundary, 1))
+				
 							
 
 
 	if event is InputEventScreenTouch and not event.is_pressed() and event.get_index() == ongoing_drag:
 		ongoing_drag = -1
-		emit_signal("analogic_chage", Vector2.ZERO)
+		analogic_change.emit(Vector2.ZERO)
 		global_position = default_global_position
 		is_pressed = false
 		touch.texture_normal = stick if is_instance_valid(stick) else preload("res://addons/virtual_joystick/sprites/stick.png")
+		
 		
 
 func get_button_pos() -> Vector2:
@@ -106,3 +108,5 @@ func get_value() -> Vector2:
 		return get_button_pos().normalized()
 		
 	return Vector2.ZERO
+
+
